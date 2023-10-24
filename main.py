@@ -23,6 +23,7 @@ class Square:
     piece : Piece
     alignment : Alignment
 
+
     def __str__(self) -> str:
         if self.piece == Piece.EMPTY:
             return '.'
@@ -36,32 +37,40 @@ class Square:
 class Board:
     def __init__(self) -> None:
         self._data = tuple(Square(Piece.EMPTY, Alignment.WHITE) for _ in range(8*8))
-        for i in range(16):
-            self._data[i + 8*0].alignment = Alignment.BLACK
 
-        for i in range(8):
-            self._data[i + 8*1].piece = Piece.PAWN
-            self._data[i + 8*6].piece = Piece.PAWN
+        for column in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
+            for row in (7, 8):
+                self.get(column, row).alignment = Alignment.BLACK
 
-        for i in (0 + 8*0, 7 + 8*0, 0 + 8*7, 7 + 8*7):
-            self._data[i].piece = Piece.ROOK
-        for i in (1 + 8*0, 6 + 8*0, 1 + 8*7, 6 + 8*7):
-            self._data[i].piece = Piece.KNIGHT
-        for i in (2 + 8*0, 5 + 8*0, 2 + 8*7, 5 + 8*7):
-            self._data[i].piece = Piece.BISHOP
+        for column in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
+            for row in (2, 7):
+                self.get(column, row).piece = Piece.PAWN
+
+        for row in (1, 8):
+            for column in ('a', 'h'):
+                self.get(column, row).piece = Piece.ROOK
             
-        for i in (3 + 8*0, 3 + 8*7):
-            self._data[i].piece = Piece.QUEEN
-        for i in (4 + 8*0, 4 + 8*7):
-            self._data[i].piece = Piece.KING
+            for column in ('b', 'g'):
+                self.get(column, row).piece = Piece.KNIGHT
+            
+            for column in ('c', 'f'):
+                self.get(column, row).piece = Piece.BISHOP
+            
+            self.get('d', row).piece = Piece.QUEEN
+            self.get('e', row).piece = Piece.KING
 
         self.turn = Alignment.WHITE
-    
+
+
+    def get(self, column : str, row : int) -> Square:
+        column : int = 7 - int(ord(column[0]) - 97)
+        return self._data[column + 8 * (row - 1)]
+
 
     def __str__(self) -> str:
         out = ''
 
-        data = self._data if self.turn == Alignment.WHITE else reversed(self._data)
+        data = self._data if self.turn == Alignment.BLACK else reversed(self._data)
 
         for index, value in enumerate(data):
             if index % 8 == 0:
@@ -84,8 +93,26 @@ class Board:
 
 def main():
     board = Board()
-    print(str(board))
     
+    while True:
+        print(str(board))
+        square_to_move_from = input(f'Select Piece: ')
+        if square_to_move_from.lower() == 'q':
+            break
+
+        square_to_move_from = board.get(square_to_move_from[0], int(square_to_move_from[1]))
+
+        square_to_move_to = input(f'Select Square to Move to: ')
+        if square_to_move_to.lower() == 'q':
+            break
+
+        square_to_move_to = board.get(square_to_move_to[0], int(square_to_move_to[1]))
+
+        square_to_move_to.piece = square_to_move_from.piece
+        square_to_move_to.alignment = square_to_move_from.alignment
+        square_to_move_from.piece = Piece.EMPTY
+
+        board.turn = Alignment.BLACK if board.turn == Alignment.WHITE else Alignment.WHITE
 
 
 if __name__ == '__main__':
